@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Happy Diwali</title>
+  <style>
+    .cracker {
+  position: absolute;
+  bottom: 0;
+  width: 50px;
+  animation: rise 3s infinite;
+  z-index: 0;
+}
+
+@keyframes rise {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-500px); opacity: 0; }
+}
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(ellipse at center, #1a1a1a 0%, #000000 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #fff;
+      text-align: center;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 3em;
+      color: #ffd700;
+      text-shadow: 0 0 10px #ff0, 0 0 20px #f90, 0 0 30px #f80;
+      margin-top: 1em;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px #ff0, 0 0 20px #f90, 0 0 30px #f80;
+      }
+      to {
+        text-shadow: 0 0 20px #fff200, 0 0 30px #ff9800, 0 0 40px #ff5722;
+      }
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    img {
+      max-width: 300px;
+      width: 80%;
+      height: auto;
+      margin: 1em auto;
+      display: block;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #ffcc00;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 1em;
+      width: 60%;
+      max-width: 300px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      font-size: 1em;
+      background: #ff9800;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff5722;
+    }
+
+    #linkOutput {
+      margin-top: 20px;
+      word-wrap: break-word;
+      font-size: 1.1em;
+      color: #90ee90;
+    }
+
+    #shareBtn {
+      display: none;
+      margin-top: 15px;
+      background: #25D366;
+    }
+
+    #shareBtn img {
+      vertical-align: middle;
+      height: 20px;
+      margin-right: 8px;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2em;
+      }
+
+      input[type="text"] {
+        width: 80%;
+      }
+    }
+    /* Full screen canvas, behind everything */
+#fireworks {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0; /* Behind everything */
+  pointer-events: none;
+}
+
+/* Content (like image, text, buttons) should be above */
+#content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: white;
+}
+  </style>
+</head>
+<body>
+  <canvas id="fireworks"></canvas>
+
+  <div class="container">
+    <h1 id="headline">Happy Diwali!</h1>
+        <!-- Existing crackers -->
+
+    <img src="laxmi.mata.png" alt="Goddess Laxmi" style="width: 100%; height: auto;" />
+    <div>
+        <h1 style="font-size: medium; margin-left: 0px;" >कृपया अपना नाम लिखें।</h1>
+      <input type="text" id="nameInput" placeholder="Enter your name" />
+      <br />
+      <button onclick="generateLink()">OK</button>
+      <div id="linkOutput"></div>
+      <button id="shareBtn" onclick="shareLink()">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
+        Share on WhatsApp
+      </button>
+    </div>
+  </div>
+
+  <script>
+    
+    // Fireworks logic
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    let fireworks = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createFirework() {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height / 2;
+      const particles = [];
+      const colors = ['#ff0', '#f0f', '#0ff', '#f00', '#0f0', '#00f', '#ffa500'];
+
+      for (let i = 0; i < 50; i++) {
+        const angle = Math.random() * 2 * Math.PI;
+        const speed = Math.random() * 4 + 1;
+        particles.push({
+          x,
+          y,
+          dx: Math.cos(angle) * speed,
+          dy: Math.sin(angle) * speed,
+          life: 60,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+      fireworks.push(particles);
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      fireworks.forEach((particles, index) => {
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2, 0, 2 * Math.PI);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+          p.x += p.dx;
+          p.y += p.dy;
+          p.life--;
+        });
+        fireworks[index] = particles.filter(p => p.life > 0);
+      });
+      fireworks = fireworks.filter(p => p.length > 0);
+      requestAnimationFrame(animate);
+    }
+
+    setInterval(createFirework, 2000);
+    createFirework();
+    animate();
+
+    // Parse query param
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    // Update greeting
+    const sender = getQueryParam('from');
+    if (sender) {
+      document.getElementById('headline').textContent = `Happy Diwali from ${decodeURIComponent(sender)}`;
+    }
+
+    // Generate link
+    function generateLink() {
+      const name = document.getElementById('nameInput').value.trim();
+      if (!name) {
+        alert("Please enter your name.");
+        return;
+      }
+      const encodedName = encodeURIComponent(name);
+      const baseUrl = window.location.origin + window.location.pathname;
+      const link = `${baseUrl}?from=${encodedName}`;
+      const linkOutput = document.getElementById('linkOutput');
+      linkOutput.innerHTML = `<strong>Your link:</strong><br><a href="${link}" target="_blank">${link}</a>`;
+      document.getElementById('shareBtn').style.display = 'inline-block';
+      document.getElementById('shareBtn').setAttribute('data-link', link);
+    }
+
+    // Share function
+    function shareLink() {
+      const link = document.getElementById('shareBtn').getAttribute('data-link');
+      const msg = `🎉 Happy Diwali! 🌟 Here's a greeting from me: ${link}`;
+      if (navigator.share) {
+        navigator.share({
+          title: "Happy Diwali!",
+          text: msg,
+          url: link
+        }).catch(console.error);
+      } else {
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+        window.open(waUrl, '_blank');
+      }
+    }
+  </script>
+</body>
+</html>
